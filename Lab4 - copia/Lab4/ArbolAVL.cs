@@ -419,5 +419,39 @@ namespace Lab4
             }
         }
 
+
+
+
+
+
+
+        public nodo<T> GetName(string name)
+        {
+            return GetName(root, name);
+        }
+
+        private nodo<T> GetName(nodo<T> nodo, string name)
+        {
+            if (nodo == null)
+            {
+                return null;
+            }
+            string nodoName = ((dynamic)nodo.value).recluiter;
+            //string nodoName = ((dynamic)nodo.value).companies;
+
+            if (name == nodoName)
+            {
+                return nodo;
+            }
+            else if (name != nodoName)
+            {
+                return GetName(nodo.izquierda, name);
+            }
+            else
+            {
+                return GetName(nodo.derecha, name);
+            }
+        }
+
     }
 }

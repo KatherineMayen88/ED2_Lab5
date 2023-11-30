@@ -22,6 +22,7 @@ namespace Lab4
         public static List<string> list_descompresion = new List<string>();
         public static List<string> list_diccionario = new List<string>();
 
+        public static List<string> list_reclutadores = new List<string> ();
 
         public static void leerArchivo()
         {
@@ -59,6 +60,7 @@ namespace Lab4
             {
                 try
                 {
+                    string recluiter = person.recluiter;
                     string name = person.name;
                     string dpi = Convert.ToString(person.DPI);
                     string compresion = string.Join(" ", person.companies);
@@ -66,6 +68,8 @@ namespace Lab4
 
                     list_compresion.Add("\n----------DATOS DE LA PERSONA----------\n" + "Nombre: " + name + "\nDPI: " + dpi + "\nCompañias cifradas:\n<" + comprimidos);
                     list_descompresion.Add("\n----------DATOS DE LA PERSONA----------\n" + "Nombre: " + name + "\nDPI: " + dpi + "\nCompañias descifradas:\n" + descompresionLZ78(comprimidos));
+
+                    list_reclutadores.Add(name + " | " + dpi + " | " + recluiter);
 
                     arbol.Add(person);
                 }
@@ -142,6 +146,7 @@ namespace Lab4
                 return ($"No se encontró ninguna persona con el DPI {dpiABuscar}");
             }
         }
+
 
 
         //LABORATORIO 2
@@ -544,6 +549,7 @@ namespace Lab4
          */
 
 
+
         //LABORATORIO 4
         public static void ConversacionCifrado(long dpi)
         {
@@ -683,6 +689,169 @@ namespace Lab4
         }
 
 
+
+
+        //LABORATORIO 5
+        //personaBuscadaParaLab5
+        public static void personaBuscadaParaLab5(string n_reclutador, string contrasenia)
+        {
+            nodo<Persona> nodoEncontrado = arbol.GetName(n_reclutador);
+
+            Console.WriteLine("\n----------USUARIOS ENCONTRADOS----------\nPersonas asociadas al reclutador:");
+            Console.WriteLine("\nNombre | DPI | Reclutador");
+            foreach (var item in list_reclutadores)
+            {
+                string[] partes = item.Split('|');
+                string reclutador = partes[2].Trim();
+
+
+                if (reclutador.Equals(n_reclutador, StringComparison.OrdinalIgnoreCase))
+                {
+                    //Console.WriteLine("\n----------USUARIOS ENCONTRADOS----------\nPersonas asociadas al reclutador:");
+                    //Persona personaEncontrada = nodoEncontrado.value;
+                    //string companies = string.Join(" ", personaEncontrada.companies);
+                    //Console.WriteLine($"\nNombre: {personaEncontrada.name} \nDPI: {personaEncontrada.DPI} \nFecha de nacimiento: {personaEncontrada.datebirth} \nDirección: {personaEncontrada.address} \nReclutador: {personaEncontrada.recluiter}");
+                    Console.WriteLine(item);
+                }
+            }
+        }
+
+        public static void ConversacionCifradoRECLUTADOR(long dpi)
+        {
+            RSA rsa = new RSA();
+            string carpetaPath = @"C:\Users\kathe\source\repos\Lab4 - copia\inputs";
+            long buscado = dpi;
+            string key = "cifrado";
+            string CONV = "CONV";
+            BigInteger ClavePublica = rsa.RSAA(CONV);
+
+            string[] nombresArchivos = Directory.GetFiles(carpetaPath);
+
+            foreach (string archivo in nombresArchivos)
+            {
+                string nombreSinExtension = Path.GetFileNameWithoutExtension(archivo);
+                string[] dpiNombre = nombreSinExtension.Split('-');
+                long dpiConvertidoInt = Convert.ToInt64(dpiNombre[1]);
+
+                if (dpiConvertidoInt == buscado && dpiNombre[0] == CONV) //Se agrega condición CONV debido a que las cartas y las conversaciones están en la misma carpeta
+                {
+                    try
+                    {
+                        string contenido = File.ReadAllText(archivo) + "\n" + ClavePublica;
+                        Console.WriteLine("\n\nCarta " + nombreSinExtension + " cifrada: \n");
+                        CifradoTransposicionCRECLUTADOR(nombreSinExtension, contenido, key, '-');
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("ERROR en la lectura del archivo " + archivo);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public static void ConversacionDescifradoRECLUTADOR(long dpi)
+        {
+            string carpetaPath = @"C:\Users\kathe\source\repos\Lab4 - copia\Conversaciones Cifradas";
+            long buscado = dpi;
+            string key = "cifrado";
+
+            string[] nombresArchivos = Directory.GetFiles(carpetaPath);
+
+            foreach (string archivo in nombresArchivos)
+            {
+                string nombreSinExtension = Path.GetFileNameWithoutExtension(archivo);
+                string[] dpiNombre = nombreSinExtension.Split('-');
+                long dpiConvertidoInt = Convert.ToInt64(dpiNombre[1]);
+
+                if (dpiConvertidoInt == buscado)
+                {
+                    try
+                    {
+                        string contenido = File.ReadAllText(archivo);
+                        Console.WriteLine("\n\nCarta " + nombreSinExtension + " descifrada: \n");
+                        DescifradoTransposicion(contenido, key);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("ERROR en la lectura del archivo " + archivo);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public static void convCifradoESCRITORECLUTADOR(string archivo, string texto)
+        {
+            string contenido = texto;
+            string pathFile = $@"C:\Users\kathe\source\repos\Lab4 - copia\Conversaciones Cifradas/{archivo}-cifrado";
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(pathFile))
+                {
+                    writer.Write(contenido);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("ERROR en la escritura del archivo");
+                throw;
+            }
+
+        }
+
+        public static void CifradoTransposicionCRECLUTADOR(string nombreArchivo, string entrada, string key, char padC)
+        {
+            entrada = (entrada.Length % key.Length == 0) ? entrada : entrada.PadRight(entrada.Length - (entrada.Length % key.Length) + key.Length, padC);
+            StringBuilder outputStringBuilder = new StringBuilder();
+
+            int caracteresTotal = entrada.Length;
+            int columnasTotal = key.Length;
+            int filasTotal = (int)Math.Ceiling((double)caracteresTotal / columnasTotal);
+
+            char[,] caracteresFila = new char[filasTotal, columnasTotal];
+            char[,] caracteresColumna = new char[columnasTotal, filasTotal];
+            char[,] columnasOrdenadas = new char[columnasTotal, filasTotal];
+
+            int filaActual = 0;
+            int columnaActual = 0;
+
+            int[] mezclaIndexs = ObtenerIndex(key);
+
+            for (int i = 0; i < caracteresTotal; i++)
+            {
+                filaActual = i / columnasTotal;
+                columnaActual = i % columnasTotal;
+                caracteresFila[filaActual, columnaActual] = entrada[i];
+            }
+
+            for (int i = 0; i < filasTotal; i++)
+            {
+                for (int j = 0; j < columnasTotal; j++)
+                {
+                    caracteresColumna[j, i] = caracteresFila[i, j];
+                }
+            }
+
+            for (int i = 0; i < columnasTotal; i++)
+            {
+                for (int j = 0; j < filasTotal; j++)
+                {
+                    columnasOrdenadas[mezclaIndexs[i], j] = caracteresColumna[i, j];
+                }
+            }
+
+            for (int i = 0; i < caracteresTotal; i++)
+            {
+                filaActual = i / filasTotal;
+                columnaActual = i % filasTotal;
+                outputStringBuilder.Append(columnasOrdenadas[filaActual, columnaActual]);
+            }
+
+            convCifradoESCRITORECLUTADOR(nombreArchivo, outputStringBuilder.ToString());
+            Console.WriteLine(outputStringBuilder.ToString());
+        }
 
 
 

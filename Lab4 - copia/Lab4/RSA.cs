@@ -11,20 +11,22 @@ namespace Lab4
     public class RSA
     {
         static Random random = new Random();
-        public BigInteger RSAA(string m)
+        public BigInteger RSAA(string m) //m es el mensaje que se esta mandando
         {
-            BigInteger mensaje = CalculateSHA256HashAsBigInteger(m);
+            BigInteger mensaje = CalculateSHA256HashAsBigInteger(m); //se saca el hash
             // Escoge dos números primos grandes (p y q)
-            BigInteger p = GenerateLargePrime(256);//BORRAR se ingresa la cantidad de bits para generar el número primo 1024 se tarda mucho en cargar
+            BigInteger p = GenerateLargePrime(256);
             BigInteger q = GenerateLargePrime(256);
 
+
+            //FORMULAS DE LA PRESENTACION
             // Calcula n (producto de p y q)
             BigInteger n = p * q;
 
             // Calcula la función Z 
             BigInteger z = (p - 1) * (q - 1);
 
-            // Escogemos un valor para la clave de cifrado (k), 
+            // Escogemos un valor para la clave de cifrado (k), un valor generico
             BigInteger k = 65537;
 
             // Calcula la clave privada (j) usando el algoritmo de Euclides extendido
@@ -50,15 +52,23 @@ namespace Lab4
             }
         }
 
+        public BigInteger CifradoMensaje(BigInteger M, BigInteger K, BigInteger n)
+        {
+            BigInteger cifrado = 0;
+            cifrado = BigInteger.Pow(M, (int)K) % n;
+            //se pone numeros fijos dado que se tarda mucho en realizar la operacion 
+            return cifrado;
+        }
+
         public BigInteger Cifrado(BigInteger M, BigInteger K, BigInteger n)
         {
             BigInteger cifrado = 0;
             cifrado = BigInteger.Pow(1454864648464, (int)K) % n;//BORRAR en vez del número 1454864648464 debería ir el hash del mensaje pero si son números muy grandes
             //se pone numeros fijos dado que se tarda mucho en realizar la operacion 
             return cifrado;
-        }
+        } //este no
 
-        public BigInteger Descifrado(BigInteger C, BigInteger j, BigInteger n) //BORRAR funciona pero al ser números tan grandes literal se tarda en encontrarlo.
+        public BigInteger Descifrado(BigInteger C, BigInteger j, BigInteger n) 
         //se usa la clave publica que si se encuentra rapido, y se manda a archivo de texto
         {
             BigInteger mensaje = 0;
@@ -84,7 +94,7 @@ namespace Lab4
         }
 
 
-        static BigInteger ModInverse(BigInteger a, BigInteger m)
+        static BigInteger ModInverse(BigInteger a, BigInteger m) //para obtener la J
         {
             // Implementación del algoritmo de Euclides extendido para calcular el inverso modular
             BigInteger m0 = m;
@@ -173,7 +183,7 @@ namespace Lab4
             return true;
         }
 
-        static bool MillerRabinTest(BigInteger a, BigInteger n, BigInteger d, int s)
+        static bool MillerRabinTest(BigInteger a, BigInteger n, BigInteger d, int s) //metodo de verificacion de numeros primos
         {
             BigInteger x = BigInteger.ModPow(a, d, n);
 
@@ -189,6 +199,21 @@ namespace Lab4
 
             return false;
         }
+
+
+
+
+
+        public void pruebasx()
+        {
+            BigInteger C = 0;
+            BigInteger j = 0;
+            BigInteger n = 0;
+
+            Descifrado(C, j, n);
+            CifradoMensaje(C, j, n);
+        }
+
 
     }
 }
